@@ -143,13 +143,6 @@
               <button type="button" class="tab" data-guide="ws">Kết nối websocket</button>
               <button type="button" class="tab" data-guide="usage">Cách sử dụng</button>
             </div>
-            <!-- ============================================================
-                 NOTE CHO APPLE SANG:
-                 Video hướng dẫn của từng mục nằm trong object GUIDES (trong phần JS).
-                 Muốn gắn video: điền link vào thuộc tính video của từng mục,
-                 ví dụ: video:"video/them-vao-obs.mp4" hoặc link embed.
-                 Chưa có link thì hiển thị placeholder [ VIDEO HƯỚNG DẪN ].
-                 ============================================================ -->
             <div class="guide-inline">
               <p class="guide-inline-title" id="guideInlineTitle"></p>
               <ol class="guide-body" id="guideInline"></ol>
@@ -671,7 +664,7 @@
         obs: {
           eyebrow:"HƯỚNG DẪN / 01",
           title:"Thêm vào trong OBS",
-          video:"", // TODO(AppleSang): dán link video "Thêm vào OBS" vào đây, ví dụ "video/them-vao-obs.mp4"
+          video:"res/dock.mp4",
           steps:[
             "Mở OBS → Docks → Custom Browser Docks",
             "Ở Dock Name bạn có thể nhập tên gì cũng được, ví dụ IRL Switcher.",
@@ -682,7 +675,7 @@
         ws: {
           eyebrow:"HƯỚNG DẪN / 02",
           title:"Kết nối websocket",
-          video:"", // TODO(AppleSang): dán link video "Kết nối websocket" vào đây
+          video:"res/websocket.mp4",
           steps:[
             "Trong OBS: Tools → WebSocket Server Settings.",
             "Bật Enable WebSocket server và Enable Authentication",
@@ -693,7 +686,7 @@
         usage: {
           eyebrow:"HƯỚNG DẪN / 03",
           title:"Cách sử dụng",
-          video:"", // TODO(AppleSang): dán link video "Cách sử dụng" vào đây
+          video:"res/setup-1.mp4", 
           steps:[
             "Chọn media source RTMP / SRT đang monitor, chọn scene IRL và scene Disconnected.",
             "Bấm Enable auto-switch — LIVE sẽ về scene IRL, mất tín hiệu sẽ về scene Disconnected."
