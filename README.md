@@ -12,10 +12,10 @@
 
 ## Giới thiệu
 
-IRL Switcher là một công cụ giao diện web chạy trực tiếp bên trong OBS (qua **Browser Source**), kết nối với OBS thông qua **obs-websocket** để giám sát các media source phát trực tiếp (SRT / RTMP) và tự động điều khiển scene:
+IRL Switcher là một công cụ giao diện web chạy trực tiếp bên trong OBS, kết nối với OBS thông qua **obs-websocket** để giám sát các media source phát trực tiếp (SRT / RTMP) và tự động điều khiển scene:
 
-- Khi nguồn tín hiệu **LIVE** → tự chuyển sang scene **IRL** để lên sóng hình ảnh từ hiện trường.
-- Khi nguồn tín hiệu **MẤT** (rỗng, đen, đứng yên, ngắt kết nối) → tự chuyển về scene **Disconnected** (màn chờ) thay vì để khung hình chết trên sóng.
+- Khi nguồn tín hiệu **LIVE** → tự chuyển sang scene **IRL**.
+- Khi nguồn tín hiệu **MẤT** → tự chuyển về scene **Disconnected**
 
 Toàn bộ hoạt động ngay trên máy streaming, không cần dịch vụ trung gian.
 
@@ -39,14 +39,6 @@ Dành cho streamer IRL (di chuyển ngoài trời, phát sóng qua 4G/5G bằng 
 
 - [OBS Studio](https://obsproject.com/) với **WebSocket Server** bật sẵn (`Tools → WebSocket Server Settings`).
 - Một media source (Media Source) nhận sóng `srt://` hoặc `rtmp://`.
-- Trình duyệt / Browser Source có kết nối mạng đến OBS WebSocket.
-
-## Sử dụng nhanh
-
-1. Mở `apple.html` trong Browser Source của OBS (hoặc trình duyệt để cấu hình trước).
-2. Nhập IP, Port, Password của OBS WebSocket → **Connect**.
-3. Chọn **media source** cần giám sát, chọn **scene IRL** và **scene Disconnected**.
-4. Bấm **Enable auto-switch** — phần còn lại để tool lo.
 
 ## Ghi chú
 
