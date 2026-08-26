@@ -283,7 +283,7 @@
       function vnError(message) {
         const msg = String(message || "");
         if (/password|auth/i.test(msg)) return "SAI MẬT KHẨU — KIỂM TRA LẠI PASSWORD";
-        if (/unable to reach|closed|network|failed/i.test(msg)) return "KHÔNG TÌM THẤY OBS — KIỂM TRA IP / PORT VÀ WEBSOCKET SERVER";
+        if (/unable to reach|closed|network|failed/i.test(msg)) return "KẾT NỐI THẤT BẠI — KIỂM TRA IP / PORT VÀ WEBSOCKET SERVER | NẾU NHẬP ĐÚNG THÔNG TIN HÃY THỬ MỞ TAB ẨN DANH, TRÌNH DUYỆT KHÁC HOẶC THÊM THẲNG VÀO OBS";
         return (msg || "LỖI KHÔNG XÁC ĐỊNH").toUpperCase();
       }
 
