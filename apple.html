@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <title>IRL SWITCHER // AppleSang</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="icon" type="image/ico" sizes="512x512" href="/irl-switcher-compact-512.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Doto:wght@700&family=Space+Grotesk:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <style>
+      :root { --black:#000; --surface:#111; --surface-raised:#1a1a1a; --border:#222; --border-visible:#333; --text-disabled:#666; --text-secondary:#999; --text-primary:#e8e8e8; --text-display:#fff; --accent:#d71921; --success:#4a9e5c; --warning:#d4a843; --aqua:#00d8d8; --purple:#b18cff; }
+      * { box-sizing:border-box; }
+      body { margin:0; min-width:320px; background:var(--black); color:var(--text-primary); font-family:"Space Grotesk",system-ui,sans-serif; }
+      button,input,select { font:inherit; }
+      .shell { width:min(1120px,calc(100% - 40px)); margin:auto; padding:32px 0 72px; }
+      header { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; border-bottom:1px solid var(--border); padding-bottom:24px; }
+      .eyebrow,.label { color:var(--text-secondary); font:400 11px/1.2 "Space Mono",monospace; letter-spacing:.08em; text-transform:uppercase; }
+      h1 { margin:8px 0 0; color:var(--text-display); font-size:clamp(32px,7vw,52px); font-weight:400; line-height:1; letter-spacing:-.04em; }
+      .connection { text-align:right; }
+      .connection strong { display:block; margin-top:8px; color:var(--warning); font:400 14px/1.3 "Space Mono",monospace; letter-spacing:.04em; }
+      .connection strong::before { content:"● "; font-size:11px; }
+      .link-edit { margin-top:12px; min-height:32px; padding:8px 0; background:none; border-radius:0; color:var(--text-secondary); font-size:11px; letter-spacing:.08em; transition:color .2s ease,opacity .2s ease; }
+      .link-edit:hover { opacity:1; color:var(--text-primary); }
+      main { display:grid; gap:48px; padding-top:48px; }
+      .panel h2 { margin:8px 0 0; color:var(--text-display); font-size:24px; font-weight:400; letter-spacing:-.02em; }
+      .data-head { display:flex; justify-content:space-between; align-items:end; gap:16px; }
+      .count { color:var(--text-secondary); font:400 11px/1.2 "Space Mono",monospace; letter-spacing:.08em; text-transform:uppercase; }
+      .count[data-tone="success"] { color:var(--success); }
+      .empty { margin-top:32px; padding:64px 0; border-top:1px solid var(--border-visible); color:var(--text-secondary); font-size:18px; text-align:center; }
+      .field { display:grid; gap:8px; margin-top:24px; }
+      .field-head { display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
+      .scene-check { font:400 11px/1.2 "Space Mono",monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--text-disabled); }
+      .scene-check[data-ok="1"] { color:var(--success); }
+      .scene-check[data-ok="0"] { color:var(--accent); cursor:pointer; }
+      .scene-check[data-ok="0"]:hover { text-decoration:underline; }
+      select,input { width:100%; min-height:46px; padding:10px 0; background:transparent; color:var(--text-primary); border:0; border-bottom:1px solid var(--border-visible); border-radius:0; font-family:"Space Mono",monospace; font-size:14px; outline:none; transition:border-color .2s ease; }
+      select:focus,input:focus { border-color:var(--text-display); }
+      input[aria-invalid="true"] { border-color:var(--accent); }
+      select option { background:var(--surface); color:var(--text-primary); }
+      .source-list { margin:16px 0 8px; padding:0; list-style:none; border-top:1px solid var(--border-visible); max-height:280px; overflow-y:auto; }
+      .source-list button { display:flex; justify-content:space-between; align-items:center; gap:12px; width:100%; min-height:48px; padding:12px 16px; cursor:pointer; text-align:left; background:transparent; border:0; border-radius:0; border-bottom:1px solid var(--border); color:var(--text-secondary); transition:background .15s ease,color .15s ease; }
+      .source-list button:hover { color:var(--text-primary); }
+      .source-name { font-family:"Space Mono",monospace; font-size:13px; letter-spacing:.01em; overflow-wrap:anywhere; }
+      .source-tags { display:flex; flex:none; gap:6px; }
+      .source-row.active button { background:var(--surface-raised); color:var(--text-display); }
+      .source-row.active .source-name::before { content:"● "; color:var(--accent); font-size:11px; vertical-align:2px; }
+      .tag { padding:3px 10px; border:1px solid var(--border-visible); border-radius:999px; font:400 11px/1.2 "Space Mono",monospace; letter-spacing:.06em; text-transform:uppercase; color:var(--text-disabled); }
+      .tag.srt { border-color:var(--purple); color:var(--purple); }
+      .tag.rtmp { border-color:var(--aqua); color:var(--aqua); }
+      .source-name[data-proto="srt"] { color:var(--purple); }
+      .source-name[data-proto="rtmp"] { color:var(--aqua); }
+      .source-row.active .source-name { color:var(--text-display); }
+      .source-toggle { display:block; width:100%; min-height:44px; padding:12px 16px; background:none; border:0; border-radius:0; border-bottom:1px solid var(--border); color:var(--text-secondary); font:400 11px/1.2 "Space Mono",monospace; letter-spacing:.08em; text-transform:uppercase; text-align:left; cursor:pointer; }
+      .source-toggle:hover { color:var(--text-primary); }
+      .tag.signal-live { border-color:var(--success); color:var(--success); }
+      .tag.signal-dead { border-color:var(--accent); color:var(--accent); }
+      .actions { display:flex; align-items:center; gap:16px; margin-top:32px; }
+      button { min-height:44px; padding:12px 24px; cursor:pointer; border:0; border-radius:999px; background:var(--text-display); color:var(--black); font:400 13px/1 "Space Mono",monospace; letter-spacing:.06em; text-transform:uppercase; transition:opacity .2s ease; }
+      button:hover { opacity:.82; } button:disabled { cursor:not-allowed; opacity:.4; }
+      button.secondary { background:transparent; border:1px solid var(--border-visible); color:var(--text-primary); }
+      #armButton[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:var(--black); }
+      #armButton[aria-pressed="false"] { background:var(--success); border-color:var(--success); color:var(--black); }
+      #armButton:disabled { background:transparent; border-color:var(--border-visible); color:var(--text-secondary); }
+      .dialog-close { position:absolute; top:16px; right:16px; min-height:36px; padding:8px 12px; background:none; color:var(--text-secondary); font-size:11px; }
+      .inline-status { min-height:18px; margin-top:4px; color:var(--text-secondary); font:400 11px/1.5 "Space Mono",monospace; letter-spacing:.04em; overflow-wrap:anywhere; }
+      .note { margin:24px 0 0; color:var(--text-disabled); font-size:14px; line-height:1.5; }
+      .scene-check { font:400 11px/1.2 "Space Mono",monospace; letter-spacing:.08em; text-transform:uppercase; color:var(--text-disabled); }
+      .scene-check[data-ok="1"] { color:var(--success); }
+      .scene-check[data-ok="0"] { color:var(--text-display); background:var(--accent); padding:3px 10px; border-radius:999px; cursor:pointer; animation:alert-blink 1s steps(2,end) infinite; }
+      .scene-check[data-ok="0"]:hover { text-decoration:underline; }
+      @keyframes alert-blink { 50% { opacity:.3; } }
+      .source-list.locked button { pointer-events:none; opacity:.45; }
+      .overlay { position:fixed; inset:0; z-index:10; display:flex; align-items:center; justify-content:center; padding:clamp(12px,3vw,16px); background:rgba(0,0,0,.8); }
+      .dialog { position:relative; width:min(860px,100%); max-height:calc(100vh - 32px); overflow-y:auto; padding:clamp(20px,4vw,36px); background:var(--surface); border:1px solid var(--border-visible); border-radius:8px; }
+      .dialog-grid { display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,1fr); gap:clamp(24px,5vw,48px); align-items:start; }
+      .dialog-info { display:grid; gap:16px; align-content:start; }
+      .dialog-guides { display:grid; gap:16px; align-content:start; }
+      .login-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+      .brand-logo { flex:none; width:clamp(110px,13vw,150px); height:auto; margin-top:2px; }
+      .guide-body { margin:20px 0 0; padding-left:20px; display:grid; gap:12px; color:var(--text-primary); font-size:14px; line-height:1.55; }
+      .guide-body li::marker { color:var(--text-secondary); font-family:"Space Mono",monospace; font-size:12px; }
+      .tab-row { display:flex; flex-wrap:wrap; gap:4px; padding:4px; border:1px solid var(--border-visible); border-radius:999px; width:100%; }
+      .tab { flex:1 1 auto; min-height:36px; padding:8px 12px; background:transparent; border:0; border-radius:999px; color:var(--text-secondary); font:400 10px/1.2 "Space Mono",monospace; letter-spacing:.06em; text-transform:uppercase; transition:background .2s ease,color .2s ease; }
+      .tab:hover { color:var(--text-primary); }
+      .tab.active { background:var(--text-display); color:var(--black); }
+      .guide-inline { width:100%; border-top:1px solid var(--border); padding-top:16px; }
+      .guide-inline-title { margin:0 0 12px; color:var(--text-display); font:500 14px/1.3 "Space Grotesk",sans-serif; }
+      .guide-inline .guide-body { margin:0; }
+      .eye { min-height:24px; padding:2px 0; background:none; border-radius:0; color:var(--text-secondary); font:400 10px/1.2 "Space Mono",monospace; letter-spacing:.08em; }
+      .eye:hover { opacity:1; color:var(--text-primary); }
+      .video-slot { margin-top:16px; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; background:var(--surface-raised); border:1px dashed var(--border-visible); border-radius:8px; color:var(--text-disabled); font:400 11px/1.4 "Space Mono",monospace; letter-spacing:.08em; text-align:center; padding:12px; }
+      @media (max-width:720px) { .dialog-grid { grid-template-columns:1fr; gap:24px; } }
+      .toast { position:fixed; left:50%; bottom:24px; transform:translateX(-50%); z-index:20; max-width:calc(100% - 32px); padding:12px 20px; background:var(--surface-raised); border:1px solid var(--border-visible); border-radius:999px; color:var(--text-primary); font:400 12px/1.4 "Space Mono",monospace; letter-spacing:.04em; text-align:center; }
+      .toast[data-kind="warn"] { border-color:var(--accent); color:var(--accent); }
+      .toast[data-kind="ok"] { border-color:var(--success); color:var(--success); }
+      form { display:grid; gap:16px; margin-top:32px; }
+      .form-actions { display:flex; align-items:center; gap:16px; margin-top:8px; }
+      .hidden { display:none; }
+      @media (max-width:760px) { .shell { width:min(100% - 32px,1120px); padding-top:24px; } main { gap:40px; padding-top:40px; } header { padding-bottom:20px; } .connection strong { font-size:12px; } .data-head { align-items:start; flex-direction:column; } }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header>
+        <div><h1>IRL SWITCHER</h1></div>
+        <div class="connection"><span class="eyebrow">Link status</span><strong id="connectionState">OFFLINE</strong><button type="button" class="link-edit hidden" id="editLink">[ EDIT CONNECTION ]</button></div>
+      </header>
+      <main>
+        <section class="panel" aria-labelledby="cfgTitle">
+          <div class="data-head"><div><p class="eyebrow">01 / Watchdog</p><h2 id="cfgTitle">Cấu hình</h2></div><span class="count" id="wdState">WAITING FOR LINK</span></div>
+          <div id="cfgEmpty" class="empty">[ CONNECT TO CONFIGURE THE WATCHDOG ]</div>
+          <div id="cfgPanel" class="hidden">
+            <ul id="sourceList" class="source-list"></ul>
+            <div class="field" id="irlField"><div class="field-head"><label class="label" for="irlScene">Scene khi LIVE (IRL)</label><span class="scene-check" id="irlCheck">—</span></div><select id="irlScene"><option value="">—</option></select></div>
+            <div class="field" id="brbField"><div class="field-head"><label class="label" for="brbScene">Scene khi mất tín hiệu (Disconnected)</label><span class="scene-check" id="brbCheck">—</span></div><select id="brbScene"><option value="">—</option></select></div>
+            <div class="actions"><button type="button" class="secondary" id="armButton" aria-pressed="false" disabled>Enable auto-switch</button></div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div class="overlay hidden" id="overlay">
+      <div class="dialog" id="loginDialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+        <button type="button" class="dialog-close hidden" id="dialogClose">[ X ]</button>
+        <div class="dialog-grid" id="dialogGrid">
+          <div class="dialog-login">
+            <div class="login-head">
+              <div><p class="eyebrow">00 / WEBSOCKET</p><h2 id="dialogTitle">Kết nối OBS</h2></div>
+              <img src="irl-switcher.svg" alt="IRL Switcher" class="brand-logo" />
+            </div>
+            <form id="connectionForm">
+              <div class="field"><label class="label" for="host">IP Address</label><input id="host" name="host" autocomplete="off" value="127.0.0.1" required /></div>
+              <div class="field"><label class="label" for="port">Port</label><input id="port" name="port" inputmode="numeric" autocomplete="off" value="4455" required /></div>
+              <div class="field"><div class="field-head"><label class="label" for="password">Password</label><button type="button" class="eye" id="pwToggle" aria-label="Hiện/ẩn mật khẩu">[ SHOW ]</button></div><input id="password" name="password" type="password" autocomplete="current-password" /></div>
+              <div class="form-actions" id="obsActions"><button id="connectButton" type="submit">Connect</button><span class="inline-status" id="formStatus" aria-live="polite">[ READY ]</span></div>
+            </form>
+          </div>
+          <div class="dialog-guides" id="infoPanel">
+            <div class="tab-row" id="guideTabs">
+              <button type="button" class="tab" data-guide="obs">Thêm vào OBS</button>
+              <button type="button" class="tab" data-guide="ws">Kết nối websocket</button>
+              <button type="button" class="tab" data-guide="usage">Cách sử dụng</button>
+            </div>
+            <!-- ============================================================
+                 NOTE CHO APPLE SANG:
+                 Video hướng dẫn của từng mục nằm trong object GUIDES (trong phần JS).
+                 Muốn gắn video: điền link vào thuộc tính video của từng mục,
+                 ví dụ: video:"video/them-vao-obs.mp4" hoặc link embed.
+                 Chưa có link thì hiển thị placeholder [ VIDEO HƯỚNG DẪN ].
+                 ============================================================ -->
+            <div class="guide-inline">
+              <p class="guide-inline-title" id="guideInlineTitle"></p>
+              <ol class="guide-body" id="guideInline"></ol>
+              <div class="video-slot" id="guideVideo">[ VIDEO HƯỚNG DẪN — SẴN SÓNG SỚM ]</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay hidden" id="confirmOverlay">
+      <div class="dialog" role="alertdialog" aria-labelledby="confirmTitle">
+        <p class="eyebrow">Watchdog</p>
+        <h2 id="confirmTitle">Thiếu media source</h2>
+        <p class="note" id="confirmText"></p>
+        <div class="actions"><button type="button" id="confirmYes">Yes — copy source</button><button type="button" class="secondary" id="confirmNo">Cancel</button></div>
+      </div>
+    </div>
+    <div class="toast hidden" id="toast" role="status"></div>
+    <script>
+      const $ = (id) => document.getElementById(id);
+      const fields = [$("host"), $("port"), $("password")];
+      const keys = { host:"obs-host", port:"obs-port", password:"obs-password", source:"apple-source", irl:"apple-irl", brb:"apple-brb" };
+      const MEDIA_KINDS = { ffmpeg_source:"MEDIA", vlc_source:"VLC" };
+      const FROZEN_TICKS = 3;
+      const POLL_MS = 1000;
+      let socket, requestNumber = 0, requests = new Map();
+      let isConnected = false, pollTimer = null, ticking = false;
+      let armed = false, lastTone = null, lastProgram = null, toastTimer = null, pendingScene = null, externalDisabled = false;
+      let sourceItems = [];
+      const cfg = { source:null, irl:null, brb:null };
+      const srtInputs = new Set();
+      const signalInputs = new Set();
+      const stateCache = new Map();
+      const frameCache = new Map();
+      const rowSignals = new Map();
+      const sceneOk = { irl:null, brb:null };
+      const probeCanvas = document.createElement("canvas");
+      probeCanvas.width = 96;
+      probeCanvas.height = 54;
+      const probeCtx = probeCanvas.getContext("2d", {willReadFrequently:true});
+
+      fields.forEach(field => {
+        const save = () => localStorage.setItem(keys[field.name], field.value);
+        field.value = localStorage.getItem(keys[field.name]) ?? field.value;
+        field.addEventListener("input", save);
+        field.addEventListener("change", save);
+      });
+
+      function setStatus(message, kind = "") { const el = $("formStatus"); el.textContent = message; el.className = `inline-status ${kind}`; }
+      function setConnection(text, kind) { const el = $("connectionState"); el.textContent = text; el.style.color = kind === "success" ? "var(--success)" : kind === "error" ? "var(--accent)" : "var(--warning)"; }
+      function setBusy(busy) { $("connectButton").disabled = busy; fields.forEach(f => f.readOnly = busy); }
+      function openModal(closable) { $("overlay").classList.remove("hidden"); $("dialogClose").classList.toggle("hidden", !closable); animate($("loginDialog"), "zoomIn"); }
+      function closeModal() { $("overlay").classList.add("hidden"); }
+      function disconnect() { if (socket) { socket.close(); socket = null; } requests.forEach(({reject}) => reject(new Error("Connection closed."))); requests.clear(); }
+      function request(requestType, requestData = {}) {
+        return new Promise((resolve, reject) => {
+          const requestId = `irl-${++requestNumber}`;
+          requests.set(requestId, {resolve, reject});
+          socket.send(JSON.stringify({op:6, d:{requestType, requestId, requestData}}));
+        });
+      }
+      async function authenticate(hello) {
+        const auth = hello.authentication;
+        if (!auth) return null;
+        const encoder = new TextEncoder();
+        const digest = async value => btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(value)))));
+        return digest((await digest($("password").value + auth.salt)) + auth.challenge);
+      }
+
+      const CLOSE_MESSAGES = {4001:"OBS WebSocket is shutting down",4002:"Another client is connected",4003:"RPC version mismatch",4004:"Wrong password",4005:"Unsupported RPC version",4006:"Already identified",4009:"Incompatible OBS version"};
+
+      function connect() {
+        return new Promise((resolve, reject) => {
+          let settled = false;
+          const finish = (settle, value) => { if (!settled) { settled = true; settle(value); } };
+          try { socket = new WebSocket(`ws://${$("host").value.trim()}:${$("port").value.trim()}`); } catch (error) { finish(reject, error); return; }
+          socket.addEventListener("message", async ({data}) => {
+            try {
+              const message = JSON.parse(data);
+              if (message.op === 0) {
+                const authentication = await authenticate(message.d);
+                socket.send(JSON.stringify({op:1, d:{rpcVersion:1, ...(authentication ? {authentication} : {})}}));
+              } else if (message.op === 2) finish(resolve);
+              else if (message.op === 7) {
+                const pending = requests.get(message.d.requestId);
+                if (!pending) return;
+                requests.delete(message.d.requestId);
+                message.d.requestStatus.result ? pending.resolve(message.d) : pending.reject(new Error(message.d.requestStatus.comment || message.d.requestStatus.code));
+              }
+            } catch (error) { finish(reject, error); }
+          });
+          socket.addEventListener("error", () => finish(reject, new Error("Unable to reach OBS WebSocket server.")), {once:true});
+          socket.addEventListener("close", event => finish(reject, new Error(event.reason || CLOSE_MESSAGES[event.code] || `Connection closed (code ${event.code}).`)));
+        });
+      }
+
+      function logAction(text, kind = "") { showToast(text, kind); }
+
+      function animate(el, effect) {
+        el.classList.remove(...[...el.classList].filter(c => c.startsWith("animate__")));
+        void el.offsetWidth;
+        el.classList.add("animate__animated", "animate__faster", `animate__${effect}`);
+      }
+
+      function showToast(text, kind = "") {
+        const el = $("toast");
+        el.textContent = text;
+        el.dataset.kind = kind;
+        el.classList.remove("hidden");
+        animate(el, "fadeInUp");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          animate(el, "fadeOutDown");
+          setTimeout(() => el.classList.add("hidden"), 450);
+        }, 4000);
+      }
+
+      async function runConnect(auto) {
+        disconnect();
+        setBusy(true);
+        setConnection("CONNECTING", "warning");
+        setStatus(auto ? "[ AUTO CONNECT ]" : "[ OPENING SOCKET... ]");
+        try {
+          await connect();
+          isConnected = true;
+          const sessionSocket = socket;
+          socket.addEventListener("close", () => { if (isConnected && socket === sessionSocket) fail(new Error("Connection was closed.")); });
+          setBusy(false);
+          setConnection("CONNECTED", "success");
+          setStatus("[ LINK ESTABLISHED ]", "success");
+          try { const version = await request("GetVersion"); $("connectionState").textContent = `CONNECTED // ${version.responseData.obsVersion}`; } catch { /* keep label */ }
+          closeModal();
+          $("editLink").classList.remove("hidden");
+          await loadConfig();
+        } catch (error) { fail(error); }
+      }
+
+      function vnError(message) {
+        const msg = String(message || "");
+        if (/password|auth/i.test(msg)) return "SAI MẬT KHẨU — KIỂM TRA LẠI PASSWORD";
+        if (/unable to reach|closed|network|failed/i.test(msg)) return "KHÔNG TÌM THẤY OBS — KIỂM TRA IP / PORT VÀ WEBSOCKET SERVER";
+        return (msg || "LỖI KHÔNG XÁC ĐỊNH").toUpperCase();
+      }
+
+      function fail(error) {
+        isConnected = false;
+        setBusy(false);
+        stopPolling();
+        setArmed(false, true);
+        srtInputs.clear();
+        signalInputs.clear();
+        protoMap.clear();
+        stateCache.clear();
+        frameCache.clear();
+        rowSignals.clear();
+        $("editLink").classList.add("hidden");
+        setConnection("OFFLINE", "error");
+        const vn = vnError(error.message);
+        setStatus(`[ ${vn} ]`);
+        showToast(`LỖI: ${vn}`, "warn");
+        resetDataView();
+        openModal(false);
+      }
+
+      function resetDataView() {
+        const wd = $("wdState");
+        wd.textContent = "WAITING FOR LINK";
+        wd.dataset.tone = "";
+        $("cfgEmpty").classList.remove("hidden");
+        $("cfgPanel").classList.add("hidden");
+      }
+
+      async function loadConfig() {
+        const wd = $("wdState");
+        wd.textContent = "LOADING...";
+        const [inputsRes, scenesRes] = await Promise.all([request("GetInputList"), request("GetSceneList")]);
+        const media = (inputsRes.responseData.inputs || []).filter(input => MEDIA_KINDS[input.inputKind]);
+        await probeProtocols(media);
+        fillSceneSelects((scenesRes.responseData.scenes || []).sort((a,b) => a.sceneIndex - b.sceneIndex).map(s => s.sceneName));
+        sourceItems = media;
+        renderSources(media);
+        $("cfgEmpty").classList.add("hidden");
+        $("cfgPanel").classList.remove("hidden");
+        restoreCfg();
+        await refreshSceneChecks();
+        if (refreshArmButton()) { setArmed(true, true); logAction("[ WATCHDOG ENABLED — CONFIG RESTORED ]", "success"); }
+        startPolling();
+      }
+
+      const protoMap = new Map();
+
+      async function probeProtocols(media) {
+        await Promise.all(media.map(async input => {
+          if (input.inputKind !== "ffmpeg_source") return;
+          try {
+            const response = await request("GetInputSettings", {inputName:input.inputName});
+            const url = String(response.responseData.inputSettings?.input ?? "").trim();
+            if (/^srt(?:_listen)?:/i.test(url)) { protoMap.set(input.inputName, "srt"); srtInputs.add(input.inputName); signalInputs.add(input.inputName); }
+            else if (/^rtmps?:/i.test(url)) { protoMap.set(input.inputName, "rtmp"); signalInputs.add(input.inputName); }
+          } catch { /* no url setting */ }
+        }));
+      }
+
+      function fillSceneSelects(sceneNames) {
+        [["irlScene", keys.irl], ["brbScene", keys.brb]].forEach(([id, key]) => {
+          const select = $(id);
+          const saved = localStorage.getItem(key) || "";
+          select.replaceChildren(new Option("—", ""), ...sceneNames.map(name => new Option(name, name)));
+          select.value = sceneNames.includes(saved) ? saved : "";
+          if (!select.value && saved) localStorage.removeItem(key);
+        });
+      }
+
+      function makeSourceItem(input, proto) {
+        const li = document.createElement("li");
+        li.className = "source-row";
+        li.dataset.name = input.inputName;
+        const button = document.createElement("button");
+        button.type = "button";
+        const name = document.createElement("span");
+        name.className = "source-name";
+        name.textContent = input.inputName;
+        if (proto) name.dataset.proto = proto;
+        const tags = document.createElement("span");
+        tags.className = "source-tags";
+        if (proto === "srt" || proto === "rtmp") {
+          const signal = document.createElement("span");
+          signal.className = "tag";
+          rowSignals.set(input.inputName, signal);
+          tags.append(signal);
+          const protoTag = document.createElement("span");
+          protoTag.className = `tag ${proto}`;
+          protoTag.textContent = proto.toUpperCase();
+          tags.append(protoTag);
+        }
+        button.append(name, tags);
+        button.addEventListener("click", () => selectSource(input.inputName));
+        li.append(button);
+        return li;
+      }
+
+      function renderSources(media) {
+        const list = $("sourceList");
+        list.classList.toggle("locked", armed);
+        list.replaceChildren();
+        rowSignals.clear();
+        const selected = media.filter(item => item.inputName === cfg.source);
+        let primary, extra;
+        if (selected.length) {
+          primary = selected.map(input => ({input, proto:protoMap.get(input.inputName) || null}));
+          extra = media.filter(item => item.inputName !== cfg.source).map(input => ({input, proto:protoMap.get(input.inputName) || null}));
+        } else {
+          primary = [];
+          extra = [];
+          media.forEach(input => {
+            const proto = protoMap.get(input.inputName) || null;
+            (proto ? primary : extra).push({input, proto});
+          });
+        }
+        primary.forEach((item, index) => {
+          const li = makeSourceItem(item.input, item.proto);
+          animate(li, "fadeIn");
+          li.style.animationDelay = `${Math.min(index * 40, 320)}ms`;
+          list.append(li);
+        });
+        if (extra.length) {
+          const hidden = extra.map(item => { const li = makeSourceItem(item.input, item.proto); li.classList.add("extra", "hidden"); return li; });
+          const toggle = document.createElement("button");
+          toggle.type = "button";
+          toggle.className = "source-toggle";
+          toggle.textContent = `SHOW ${extra.length} MORE SOURCE${extra.length === 1 ? "" : "S"}`;
+          toggle.addEventListener("click", () => {
+            const showing = hidden[0].classList.contains("hidden");
+            hidden.forEach(li => li.classList.toggle("hidden", !showing));
+            toggle.textContent = showing ? `HIDE ${extra.length} SOURCE${extra.length === 1 ? "" : "S"}` : `SHOW ${extra.length} MORE SOURCE${extra.length === 1 ? "" : "S"}`;
+          });
+          const toggleLi = document.createElement("li");
+          toggleLi.append(toggle);
+          list.append(toggleLi, ...hidden);
+        }
+      }
+
+      function restoreCfg() {
+        cfg.irl = $("irlScene").value || null;
+        cfg.brb = $("brbScene").value || null;
+        const savedSource = localStorage.getItem(keys.source);
+        if (savedSource && document.querySelector(`.source-row[data-name="${CSS.escape(savedSource)}"]`)) selectSource(savedSource);
+      }
+
+      function markActiveRow(name) {
+        document.querySelectorAll(".source-row").forEach(row => row.classList.toggle("active", row.dataset.name === name));
+      }
+
+      function selectSource(name) {
+        cfg.source = name;
+        localStorage.setItem(keys.source, name);
+        markActiveRow(name);
+        monitorSource(name);
+        renderSources(sourceItems);
+        refreshArmButton();
+        refreshSceneChecks();
+      }
+
+      function monitorSource(name) {
+        stateCache.delete(name);
+        frameCache.delete(name);
+        lastTone = null;
+        startPolling();
+      }
+
+      function refreshArmButton() {
+        const ready = !!(isConnected && cfg.source && cfg.irl && cfg.brb && cfg.irl !== cfg.brb && sceneOk.irl === true && sceneOk.brb === true);
+        $("armButton").disabled = !ready;
+        if (!ready && armed) setArmed(false);
+        return ready;
+      }
+
+      function setArmed(value, silent) {
+        armed = value;
+        if (!value) externalDisabled = false;
+        lastTone = null;
+        lastProgram = null;
+        $("armButton").setAttribute("aria-pressed", String(armed));
+        $("armButton").textContent = armed ? "Disable auto-switch" : "Enable auto-switch";
+        $("irlScene").disabled = armed;
+        $("brbScene").disabled = armed;
+        $("sourceList").classList.toggle("locked", armed);
+        animate($("armButton"), "pulse");
+        const wd = $("wdState");
+        wd.textContent = armed ? "ENABLED" : "DISABLED";
+        wd.dataset.tone = armed ? "success" : "";
+        if (!silent) logAction(armed ? "[ WATCHDOG ENABLED ]" : "[ WATCHDOG DISABLED ]", armed ? "success" : "");
+      }
+
+      async function sceneHasSource(scene, source) {
+        const response = await request("GetSceneItemList", {sceneName:scene});
+        for (const item of response.responseData.sceneItems || []) {
+          if (item.sourceName === source) return true;
+          if (item.sourceType === "OBS_SOURCE_TYPE_SCENE") {
+            try {
+              const group = await request("GetGroupItemList", {groupName:item.sourceName});
+              if ((group.responseData.sceneItems || []).some(i => i.sourceName === source)) return true;
+            } catch { /* not a group */ }
+          }
+        }
+        return false;
+      }
+
+      async function refreshSceneChecks() {
+        for (const [id, key, scene] of [["irlCheck", "irl", cfg.irl], ["brbCheck", "brb", cfg.brb]]) {
+          const el = $(id);
+          if (!scene || !cfg.source) {
+            sceneOk[key] = null;
+            el.textContent = "—";
+            el.dataset.ok = "";
+            continue;
+          }
+          try {
+            const has = await sceneHasSource(scene, cfg.source);
+            sceneOk[key] = has;
+            el.textContent = has ? "✓ IN SCENE" : "! MISSING";
+            el.dataset.ok = has ? "1" : "0";
+          } catch {
+            sceneOk[key] = false;
+            el.textContent = "! SCENE ERROR";
+            el.dataset.ok = "0";
+          }
+        }
+        refreshArmButton();
+      }
+
+      ["irlField", "brbField"].forEach(id => $(id).addEventListener("click", () => {
+        if (!armed && refreshArmButton()) setArmed(true);
+      }));
+      $("armButton").addEventListener("click", () => { if (refreshArmButton() || armed) setArmed(!armed); });
+      $("irlScene").addEventListener("change", () => { cfg.irl = $("irlScene").value || null; localStorage.setItem(keys.irl, $("irlScene").value); lastTone = null; refreshArmButton(); refreshSceneChecks(); });
+      $("brbScene").addEventListener("change", () => { cfg.brb = $("brbScene").value || null; localStorage.setItem(keys.brb, $("brbScene").value); lastTone = null; refreshArmButton(); refreshSceneChecks(); });
+
+      function startPolling() { stopPolling(); tick(); pollTimer = setInterval(tick, POLL_MS); }
+      function stopPolling() { clearInterval(pollTimer); pollTimer = null; }
+
+      async function tick() {
+        if (ticking || !socket || socket.readyState !== 1 || !cfg.source) return;
+        ticking = true;
+        try {
+          const names = [...new Set([...signalInputs, cfg.source])];
+          const results = await Promise.all(names.map(measure));
+          names.forEach((name, index) => paintBadge(name, results[index]));
+          refreshSceneChecks();
+          const status = results[names.indexOf(cfg.source)];
+          let program = null;
+          try { program = (await request("GetCurrentProgramScene")).responseData.currentProgramSceneName; } catch { /* ignore */ }
+          if (program) {
+            if (armed && lastProgram && lastProgram !== program && program !== cfg.irl && program !== cfg.brb && (lastProgram === cfg.irl || lastProgram === cfg.brb)) {
+              setArmed(false, true);
+              externalDisabled = true;
+              showToast("SCENE CHANGED EXTERNALLY — AUTO-SWITCH DISABLED", "warn");
+              logAction(`[ EXTERNAL SWITCH → "${program}" — AUTO-SWITCH DISABLED ]`);
+            }
+            if (!armed && externalDisabled && (program === cfg.irl || program === cfg.brb)) {
+              externalDisabled = false;
+              setArmed(true);
+              showToast(`BACK ON "${program}" — AUTO-SWITCH ENABLED`, "ok");
+            }
+            lastProgram = program;
+          }
+          if (!armed || !status) return;
+          if (status.tone === lastTone) return;
+          lastTone = status.tone;
+          const target = status.tone === "success" ? cfg.irl : cfg.brb;
+          if (!target || program === target) return;
+          await request("SetCurrentProgramScene", {sceneName:target});
+          lastProgram = target;
+          const stamp = new Date().toTimeString().slice(0, 8);
+          logAction(`[ ${stamp} SIGNAL ${status.tone === "success" ? "UP" : "DOWN"} → "${target}" ]`, status.tone === "success" ? "success" : "");
+        } catch (error) {
+          logAction(`[ ERROR: ${error.message} ]`);
+        } finally {
+          ticking = false;
+        }
+      }
+
+      async function analyzeShot(dataUrl) {
+        if (!dataUrl) return null;
+        const image = new Image();
+        image.src = dataUrl;
+        await image.decode();
+        probeCtx.drawImage(image, 0, 0, probeCanvas.width, probeCanvas.height);
+        const {data} = probeCtx.getImageData(0, 0, probeCanvas.width, probeCanvas.height);
+        let alphaSum = 0, lumaSum = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          alphaSum += data[i + 3];
+          lumaSum += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+        }
+        const pixels = data.length / 4;
+        return {shot:dataUrl, alpha:alphaSum / pixels, luma:lumaSum / pixels};
+      }
+
+      async function measure(name) {
+        let data = null, shot = null;
+        try { data = (await request("GetMediaInputStatus", {inputName:name})).responseData; } catch { /* unreachable */ }
+        if (data) {
+          try { shot = await analyzeShot((await request("GetSourceScreenshot", {sourceName:name, imageFormat:"png", imageWidth:96})).responseData.imageData); } catch { /* no frame rendered */ }
+        }
+        return data ? evaluateStatus(name, data, shot)
+                    : {label:"NO SIGNAL", tone:"error", note:"SOURCE UNAVAILABLE", tc:0};
+      }
+
+      function paintBadge(name, status) {
+        const signal = rowSignals.get(name);
+        if (!signal) return;
+        const live = status.tone === "success";
+        const label = live ? "LIVE" : "DEAD";
+        if (signal.textContent !== label) { signal.textContent = label; animate(signal, "pulse"); }
+        signal.classList.toggle("signal-live", live);
+        signal.classList.toggle("signal-dead", !live);
+      }
+
+      function evaluateStatus(name, data, shot) {
+        const raw = String(data.mediaState || "");
+        const tc = parseTimecode(data.mediaTimecode);
+        const pfx = srtInputs.has(name) ? "SRT / " : protoMap.get(name) === "rtmp" ? "RTMP / " : "";
+        if (shot && shot.alpha < 16) {
+          stateCache.delete(name);
+          frameCache.set(name, shot);
+          return {label:"NO SIGNAL", tone:"error", note:`${pfx}NO PICTURE — AWAITING STREAM`, tc};
+        }
+        if (raw !== "OBS_MEDIA_STATE_PLAYING") {
+          stateCache.delete(name);
+          return {label:"NO SIGNAL", tone:"error", note:`${pfx}${raw.replace("OBS_MEDIA_STATE_", "") || "IDLE"}`, tc};
+        }
+        const prev = stateCache.get(name);
+        const tcMoved = !!prev && tc > prev.tc;
+        const prevShot = frameCache.get(name);
+        const frameMoved = !!prevShot && !!shot && shot.shot !== prevShot.shot;
+        frameCache.set(name, shot ?? "");
+        const dark = !!shot && shot.luma < 12;
+        if (!shot) {
+          const same = tcMoved ? 0 : (prev ? prev.same + 1 : 1);
+          const live = tcMoved || (!!prev?.live && same < FROZEN_TICKS);
+          stateCache.set(name, {tc, same, peak:prev?.peak ?? 0, live});
+          if (live) return {label:"LIVE", tone:"success", note:`${pfx}RECEIVING DATA / STATE ONLY`, tc};
+          return {label:"NO SIGNAL", tone:"error", note:`${pfx}SOURCE NOT RENDERED`, tc};
+        }
+        stateCache.set(name, {tc, same:0, peak:1, live:true});
+        return {label:"LIVE", tone:"success", note:`${pfx}RECEIVING DATA${dark ? " / DARK FRAME" : ""}${frameMoved ? " / FRAME DELTA" : " / STATIC FRAME"}`, tc};
+      }
+
+      function parseTimecode(timecode) {
+        if (!timecode) return 0;
+        const parts = String(timecode).split(":").map(Number);
+        return parts.length === 3 ? parts[0] * 3600 + parts[1] * 60 + parts[2] : 0;
+      }
+
+      function tryConnect() {
+        const host = $("host").value.trim(), port = $("port").value.trim();
+        if (!host || !/^\d+$/.test(port) || Number(port) < 1 || Number(port) > 65535) { showToast("ERROR: CHECK IP / PORT", "warn"); return; }
+        runConnect(false);
+      }
+
+      const IS_OBS = /obs/i.test(navigator.userAgent);
+
+      function readHashCreds() {
+        const match = location.hash.match(/^#c=(.+)$/);
+        if (!match) return false;
+        try {
+          const [h, p, w] = decodeURIComponent(escape(atob(match[1]))).split(":");
+          if (!h || !p) return false;
+          $("host").value = h;
+          $("port").value = p;
+          if (w !== undefined) $("password").value = w;
+          fields.forEach(f => localStorage.setItem(keys[f.name], f.value));
+          history.replaceState(null, "", location.pathname + location.search);
+          return true;
+        } catch { return false; }
+      }
+
+      const GUIDES = {
+        obs: {
+          eyebrow:"HƯỚNG DẪN / 01",
+          title:"Thêm vào trong OBS",
+          video:"", // TODO(AppleSang): dán link video "Thêm vào OBS" vào đây, ví dụ "video/them-vao-obs.mp4"
+          steps:[
+            "Mở OBS → Docks → Custom Browser Docks",
+            "Ở Dock Name bạn có thể nhập tên gì cũng được, ví dụ IRL Switcher.",
+            "Ở URL dán link này vào \"http://applesang.github.io/irl-switcher/\"",
+            "Nhấn Apply — trang sẽ tự động hiện ra và thực hiện bước login OBS."
+          ]
+        },
+        ws: {
+          eyebrow:"HƯỚNG DẪN / 02",
+          title:"Kết nối websocket",
+          video:"", // TODO(AppleSang): dán link video "Kết nối websocket" vào đây
+          steps:[
+            "Trong OBS: Tools → WebSocket Server Settings.",
+            "Bật Enable WebSocket server và Enable Authentication",
+            "Bấm Show Connect Info và copy Server Password.",
+            "Nhập IP / Port / Password để kết nối — trạng thái CONNECTED là thành công."
+          ]
+        },
+        usage: {
+          eyebrow:"HƯỚNG DẪN / 03",
+          title:"Cách sử dụng",
+          video:"", // TODO(AppleSang): dán link video "Cách sử dụng" vào đây
+          steps:[
+            "Chọn media source RTMP / SRT đang monitor, chọn scene IRL và scene Disconnected.",
+            "Bấm Enable auto-switch — LIVE sẽ về scene IRL, mất tín hiệu sẽ về scene Disconnected."
+          ]
+        }
+      };
+
+      function selectTab(key) {
+        const guide = GUIDES[key];
+        if (!guide) return;
+        document.querySelectorAll("#guideTabs .tab").forEach(btn => btn.classList.toggle("active", btn.dataset.guide === key));
+        $("guideInlineTitle").textContent = guide.title;
+        $("guideInline").replaceChildren(...guide.steps.map(step => { const li = document.createElement("li"); li.textContent = step; return li; }));
+        const video = $("guideVideo");
+        if (guide.video) {
+          video.innerHTML = `<video src="${guide.video}" controls style="width:100%;border-radius:8px;display:block"></video>`;
+        } else {
+          video.textContent = `[ VIDEO: ${guide.title.toUpperCase()} — SẴN SÓNG SỚM ]`;
+        }
+        animate($("infoPanel").querySelector(".guide-inline"), "fadeIn");
+      }
+
+      document.querySelectorAll("#guideTabs .tab").forEach(btn => btn.addEventListener("click", () => selectTab(btn.dataset.guide)));
+
+      $("connectionForm").addEventListener("submit", event => { event.preventDefault(); tryConnect(); });
+      $("pwToggle").addEventListener("click", () => {
+        const input = $("password");
+        const show = input.type === "password";
+        input.type = show ? "text" : "password";
+        $("pwToggle").textContent = show ? "[ HIDE ]" : "[ SHOW ]";
+      });
+
+      $("connectButton").disabled = false;
+      $("dialogClose").addEventListener("click", closeModal);
+      $("editLink").addEventListener("click", () => { setStatus(isConnected ? "[ LINK ESTABLISHED ]" : "[ READY ]"); openModal(true); });
+
+      document.querySelectorAll(".scene-check").forEach(el => el.addEventListener("click", () => {
+        if (armed || el.dataset.ok !== "0" || !el.textContent.includes("MISSING") || !cfg.source) return;
+        pendingScene = el.id === "irlCheck" ? cfg.irl : cfg.brb;
+        $("confirmText").textContent = `Copy "${cfg.source}" vào scene "${pendingScene}" để watchdog hoạt động đầy đủ?`;
+        $("confirmOverlay").classList.remove("hidden");
+        animate($("confirmOverlay").querySelector(".dialog"), "zoomIn");
+      }));
+      $("confirmYes").addEventListener("click", async () => {
+        $("confirmOverlay").classList.add("hidden");
+        const scene = pendingScene, source = cfg.source;
+        pendingScene = null;
+        if (!scene || !source) return;
+        try {
+          await request("CreateSceneItem", {sceneName:scene, sourceName:source});
+          showToast(`COPIED "${source}" → "${scene}"`, "ok");
+          logAction(`[ PATCHED SCENE "${scene}" ← "${source}" ]`, "success");
+          refreshSceneChecks();
+        } catch (error) { showToast(`ERROR: ${error.message}`, "warn"); }
+      });
+      $("confirmNo").addEventListener("click", () => { $("confirmOverlay").classList.add("hidden"); pendingScene = null; });
+
+      ["irlScene", "brbScene"].forEach(id => $(id).addEventListener("mousedown", () => { if (!armed && refreshArmButton()) setArmed(true); }));
+
+      document.addEventListener("keydown", event => {
+        if (event.key !== "Escape") return;
+        if (!$("confirmOverlay").classList.contains("hidden")) { $("confirmOverlay").classList.add("hidden"); pendingScene = null; return; }
+        if (isConnected) closeModal();
+      });
+
+      (() => {
+        selectTab(IS_OBS ? "ws" : "obs");
+        const fromHash = readHashCreds();
+        const host = $("host").value.trim(), port = $("port").value.trim();
+        if (fromHash || (host && /^\d+$/.test(port) && Number(port) >= 1 && Number(port) <= 65535)) { openModal(false); runConnect(true); }
+        else { openModal(false); setStatus("[ ENTER CONNECTION DETAILS ]"); }
+      })();
+    </script>
+  </body>
+</html>
