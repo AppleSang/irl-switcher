@@ -1232,7 +1232,11 @@
 
       document.querySelectorAll("#guideTabs .tab").forEach(btn => btn.addEventListener("click", () => selectTab(btn.dataset.guide)));
 
-      $("connectionForm").addEventListener("submit", event => { event.preventDefault(); tryConnect(); });
+      $("connectionForm").addEventListener("submit", event => {
+        event.preventDefault();
+        if (!IS_OBS) { requestNetworkAndConnect(); return; }
+        tryConnect();
+      });
       $("pwToggle").addEventListener("click", () => {
         const input = $("password");
         const show = input.type === "password";
@@ -1318,20 +1322,51 @@
       });
 
       async function checkLocalNetworkPermission() {
-        if (IS_OBS) return true;
+        if (IS_OBS) return "granted";
         try {
-          if (!navigator.permissions || !navigator.permissions.query) return true;
+          if (!navigator.permissions || !navigator.permissions.query) return "unsupported";
           const status = await navigator.permissions.query({ name: "local-networks" });
-          if (status.state === "granted") return true;
-          if (status.state === "denied") {
-            $("networkDenied").classList.remove("hidden");
-            $("connectionForm").classList.add("hidden");
-            $("obsActions").classList.add("hidden");
-            setStatus("[ QUYỀN MẠNG BỊ TỪ CHỐI ]");
-            return false;
+          return status.state;
+        } catch { return "unsupported"; }
+      }
+
+      function showNetworkDenied() {
+        $("networkDenied").classList.remove("hidden");
+        $("connectionForm").classList.add("hidden");
+        $("obsActions").classList.add("hidden");
+        setStatus("[ QUYỀN MẠNG BỊ TỪ CHỐI — VUI LÒNG CHO PHÉP TRONG CÀI ĐẶT TRÌNH DUYỆT ]");
+      }
+
+      async function requestNetworkAndConnect() {
+        setBusy(true);
+        setConnection("CONNECTING", "warning");
+        setStatus("[ ĐANG XIN QUYỀN MẠNG... ]");
+        try {
+          const host = $("host").value.trim(), port = $("port").value.trim();
+          const ws = new WebSocket(`ws://${host}:${port}`);
+          await new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => { ws.close(); reject(new Error("timeout")); }, 5000);
+            ws.addEventListener("open", () => { clearTimeout(timeout); ws.close(); resolve(); });
+            ws.addEventListener("error", () => { clearTimeout(timeout); reject(new Error("connection failed")); });
+          });
+          const status = await navigator.permissions.query({ name: "local-networks" });
+          if (status.state === "granted") {
+            runConnect(false);
+          } else {
+            showNetworkDenied();
+            setBusy(false);
+            setConnection("OFFLINE", "error");
           }
-          return true;
-        } catch { return true; }
+        } catch {
+          const status = await navigator.permissions.query({ name: "local-networks" }).catch(() => null);
+          if (status && status.state === "granted") {
+            runConnect(false);
+          } else {
+            showNetworkDenied();
+            setBusy(false);
+            setConnection("OFFLINE", "error");
+          }
+        }
       }
 
       (async () => {
@@ -1339,8 +1374,18 @@
         const fromHash = readHashCreds();
         const host = $("host").value.trim(), port = $("port").value.trim();
         updateCreateSourceBtnState();
-        const netOk = await checkLocalNetworkPermission();
-        if (netOk && (fromHash || (host && /^\d+$/.test(port) && Number(port) >= 1 && Number(port) <= 65535))) { openModal(false); runConnect(true); }
+        const netState = await checkLocalNetworkPermission();
+        if (netState === "denied") {
+          openModal(false);
+          showNetworkDenied();
+          return;
+        }
+        if (netState === "prompt") {
+          openModal(false);
+          setStatus("[ CẦN QUYỀN MẠNG NỘI BỘ — NHẤN CONNECT ĐỂ CHO PHÉP ]");
+          return;
+        }
+        if (fromHash || (host && /^\d+$/.test(port) && Number(port) >= 1 && Number(port) <= 65535)) { openModal(false); runConnect(true); }
         else { openModal(false); setStatus("[ ENTER CONNECTION DETAILS ]"); }
       })();
     </script>
